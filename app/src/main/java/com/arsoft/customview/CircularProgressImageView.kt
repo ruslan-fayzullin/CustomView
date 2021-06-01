@@ -12,26 +12,27 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewOutlineProvider
-import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.AppCompatImageView
 
 
 class CircularProgressImageView @JvmOverloads constructor(
     context: Context,
     val attrs: AttributeSet? = null,
     defStyle: Int = 0
-) : androidx.appcompat.widget.AppCompatImageView(context, attrs, defStyle) {
+) : AppCompatImageView(context, attrs, defStyle) {
+
     private val mDrawableRect = RectF()
     private val mBorderRect = RectF()
     private val mShaderMatrix = Matrix()
     private val mBitmapPaint = Paint()
     private val mBorderPaint = Paint()
     private val mCircleBackgroundPaint = Paint()
+
     private var mBorderColor = DEFAULT_BORDER_COLOR
     private var mBorderWidth = DEFAULT_BORDER_WIDTH
-    private var mCircleBackgroundColor =
-        DEFAULT_CIRCLE_BACKGROUND_COLOR
+    private var mCircleBackgroundColor = DEFAULT_CIRCLE_BACKGROUND_COLOR
     private var mImageAlpha = DEFAULT_IMAGE_ALPHA
     private var mBitmap: Bitmap? = null
     private var mBitmapCanvas: Canvas? = null
@@ -87,40 +88,39 @@ class CircularProgressImageView @JvmOverloads constructor(
     private val foregroundPaint = Paint()
 
     init {
-        val a =
-            context.obtainStyledAttributes(attrs, R.styleable.CircularProgressImageView, defStyle, 0)
-        mBorderWidth = a.getDimensionPixelSize(
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CircularProgressImageView, defStyle, 0)
+        mBorderWidth = typedArray.getDimensionPixelSize(
             R.styleable.CircularProgressImageView_civ_border_width,
             DEFAULT_BORDER_WIDTH
         )
-        mBorderColor = a.getColor(
+        mBorderColor = typedArray.getColor(
             R.styleable.CircularProgressImageView_civ_border_color,
             DEFAULT_BORDER_COLOR
         )
-        mBorderOverlay = a.getBoolean(
+        mBorderOverlay = typedArray.getBoolean(
             R.styleable.CircularProgressImageView_civ_border_overlay,
             DEFAULT_BORDER_OVERLAY
         )
-        mCircleBackgroundColor = a.getColor(
+        mCircleBackgroundColor = typedArray.getColor(
             R.styleable.CircularProgressImageView_civ_circle_background_color,
             DEFAULT_CIRCLE_BACKGROUND_COLOR
         )
-        mStrokeWidth = a.getDimension(
+        mStrokeWidth = typedArray.getDimension(
             R.styleable.CircularProgressImageView_progressBarThickness,
             mStrokeWidth
         )
-        mProgress = a.getFloat(R.styleable.CircularProgressImageView_progress, mProgress)
-        color = a.getColor(R.styleable.CircularProgressImageView_progressbarColor, color)
-        min = a.getInt(R.styleable.CircularProgressImageView_min, min)
-        max = a.getInt(R.styleable.CircularProgressImageView_max, max)
-        a.recycle()
+        mProgress = typedArray.getFloat(R.styleable.CircularProgressImageView_progress, mProgress)
+        color = typedArray.getColor(R.styleable.CircularProgressImageView_progressbarColor, color)
+        min = typedArray.getInt(R.styleable.CircularProgressImageView_min, min)
+        max = typedArray.getInt(R.styleable.CircularProgressImageView_max, max)
+        typedArray.recycle()
         initCircleImage()
         initCircularProgressBar()
     }
 
     private fun initCircleImage() {
-        mInitialized = true
         super.setScaleType(SCALE_TYPE)
+        mInitialized = true
         mBitmapPaint.isAntiAlias = true
         mBitmapPaint.isDither = true
         mBitmapPaint.isFilterBitmap = true
@@ -140,7 +140,7 @@ class CircularProgressImageView @JvmOverloads constructor(
 
     private fun initCircularProgressBar() {
         backgroundPaint.flags = Paint.ANTI_ALIAS_FLAG
-        backgroundPaint.color = adjustAlpha(color, 0.3f)
+        backgroundPaint.color = adjustAlpha(color, 0.0f)
         backgroundPaint.style = Paint.Style.STROKE
         backgroundPaint.strokeWidth = mStrokeWidth
 
@@ -148,8 +148,6 @@ class CircularProgressImageView @JvmOverloads constructor(
         foregroundPaint.color = adjustAlpha(color, 0.3f)
         foregroundPaint.style = Paint.Style.STROKE
         foregroundPaint.strokeWidth = mStrokeWidth
-
-
     }
 
     override fun setScaleType(scaleType: ScaleType) {
@@ -279,11 +277,6 @@ class CircularProgressImageView @JvmOverloads constructor(
             invalidate()
         }
 
-    @Deprecated("Use {@link #setCircleBackgroundColor(int)} instead")
-    fun setCircleBackgroundColorResource(@ColorRes circleBackgroundRes: Int) {
-        circleBackgroundColor = context.resources.getColor(circleBackgroundRes)
-    }
-
     var borderWidth: Int
         get() = mBorderWidth
         set(borderWidth) {
@@ -324,7 +317,7 @@ class CircularProgressImageView @JvmOverloads constructor(
             invalidate()
         }
 
-    override fun setImageBitmap(bm: Bitmap) {
+    override fun setImageBitmap(bm: Bitmap?) {
         super.setImageBitmap(bm)
         initializeBitmap()
         invalidate()
@@ -356,8 +349,6 @@ class CircularProgressImageView @JvmOverloads constructor(
         }
         mImageAlpha = alpha
 
-        // This might be called during ImageView construction before
-        // member initialization has finished on API level >= 16.
         if (mInitialized) {
             mBitmapPaint.alpha = alpha
             invalidate()
@@ -374,8 +365,6 @@ class CircularProgressImageView @JvmOverloads constructor(
         }
         mColorFilter = cf
 
-        // This might be called during ImageView construction before
-        // member initialization has finished on API level <= 19.
         if (mInitialized) {
             mBitmapPaint.colorFilter = cf
             invalidate()
@@ -483,7 +472,6 @@ class CircularProgressImageView @JvmOverloads constructor(
         mRebuildShader = true
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return if (mDisableCircularTransformation) {
             super.onTouchEvent(event)
